@@ -8,6 +8,7 @@ public class ProjectileLauncher : NetworkBehaviour
 {
     [Header("References")]
     [SerializeField] private InputReader inputReader;
+    [SerializeField] private CoinWallet wallet;
     [SerializeField] private Transform projectileSpawnPoint;
     [SerializeField] private GameObject severProjectilePrefab;
     [SerializeField] private GameObject clientProjectilePrefab;
@@ -19,10 +20,12 @@ public class ProjectileLauncher : NetworkBehaviour
     [SerializeField] private float projectileSpeed;
     [SerializeField] private float fireRate;
     [SerializeField] private float muzzelFlashDuration;
+    [SerializeField] private int costToFire;
 
 
     private bool shouldfire;
-    private float PreviousFireTime;
+    private float timer;
+    //private float PreviousFireTime;
     private float muzzelFlashTimer;
 
     public object Instanstiate { get; private set; }
@@ -52,16 +55,23 @@ public class ProjectileLauncher : NetworkBehaviour
         }
         if(!IsOwner) { return; }
 
-        if(!shouldfire) { return; }
+        if(timer > 0)
+        {
+            timer -= Time.deltaTime;
+        }
 
-        if (Time.time < (1 / fireRate) + PreviousFireTime) { return; } 
+        if (!shouldfire) { return; }
+
+        if (timer > 0) { return; }
+
+        if (wallet.TotalCoins.Value < costToFire) { return; }
 
 
         PrimaryFireserverRpc(projectileSpawnPoint.position,projectileSpawnPoint.up);
 
         SpawnDummyProjectile(projectileSpawnPoint.position,projectileSpawnPoint.up);
 
-        PreviousFireTime = Time.time;
+        timer = 1 / fireRate;
     }
 
     
@@ -74,6 +84,10 @@ public class ProjectileLauncher : NetworkBehaviour
     [ServerRpc]
     private void PrimaryFireserverRpc(Vector3 spawnPos, Vector3 direction)
     {
+        if (wallet.TotalCoins.Value < costToFire) { return; }
+
+        wallet.SpendCoins(costToFire);
+
         GameObject ProjectileInstance = Instantiate(
             severProjectilePrefab,
             spawnPos,
@@ -127,4 +141,5 @@ public class ProjectileLauncher : NetworkBehaviour
             rb.velocity = rb.transform.up * projectileSpeed;
         }
     }
+
 }
