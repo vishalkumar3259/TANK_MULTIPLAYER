@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class ClientSingleton : MonoBehaviour
+public class HostSingleton : MonoBehaviour
 {
 
-    private static ClientSingleton instance;
+    private static HostSingleton instance;
 
     private HostGameManager gameManager;
-    public static ClientSingleton Instance
+    public static HostSingleton Instance
     {
         get
         {
@@ -17,10 +17,10 @@ public class ClientSingleton : MonoBehaviour
             {
                 return instance;
             }
-            instance = FindObjectOfType< ClientSingleton > ();
+            instance = FindObjectOfType<HostSingleton>();
             if (instance == null)
             {
-                Debug.LogError("No ClientSingleton in the scene.");
+                Debug.LogError("No HostSingleton in the scene.");
                 return null;
             }
 
@@ -33,11 +33,10 @@ public class ClientSingleton : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public async Task CreateClient()
+    public void CreateHost()
     {
-        gameManager =new HostGameManager();
+        gameManager = new HostGameManager();
 
-        await gameManager.InitAsync();
     }
 
-}   
+}

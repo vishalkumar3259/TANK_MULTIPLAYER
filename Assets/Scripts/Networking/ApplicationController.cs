@@ -1,18 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class ApplicationController : MonoBehaviour
 {
-    
-    private void Start()
+    [SerializeField] private ClientSingleton clientPrefab;
+    [SerializeField] private HostSingleton hostPrefab;
+    private async void Start()
     {
         DontDestroyOnLoad(gameObject);
 
-        LaunchInMode(SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null);
+        await LaunchInMode(SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null);
     }
 
-    private void LaunchInMode(bool isDedicatedServer)
+    private async Task LaunchInMode(bool isDedicatedServer)
     {
         if( isDedicatedServer)
         {
@@ -20,7 +22,11 @@ public class ApplicationController : MonoBehaviour
         }
         else
         {
+            ClientSingleton clientSingleton =  Instantiate(clientPrefab);
+            await clientSingleton.CreateClient();
 
+            HostSingleton HostSingleton = Instantiate(hostPrefab);
+            HostSingleton.CreateHost();
         }
     }
 
